@@ -58,6 +58,8 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue"
 import { useRouter } from "#app";
+import { useUserStore } from "~/pinia/user"
+import { storeToRefs } from "pinia"
 
 useHead({
   title: "Вход - AppProChat"
@@ -69,6 +71,9 @@ definePageMeta({
 
 const { $api } = useNuxtApp()
 const router = useRouter()
+
+const userStore = useUserStore()
+const { isUserAuth, user } = storeToRefs(userStore)
 
 const resourceRef = ref()
 
@@ -116,26 +121,26 @@ try {
     password: resource.password
   })
 
-  if (data?.error) {
-    error.value = data?.error
-  } else {
-    error.value = ""
+    if (data?.error) {
+      error.value = data?.error
+    } else {
+      error.value = ""
 
-    const tokenCookie = useCookie("app-pro-chat.auth.token", {
-      maxAge: 60 * 60 * 24 * 180, // 6 мес
-      secure: true,
-      httpOnly: false,
-      sameSite: "lax"
-    })
+      const tokenCookie = useCookie("app-pro-chat.auth.token", {
+        maxAge: 60 * 60 * 24 * 180, // 6 мес
+        secure: true,
+        httpOnly: false,
+        sameSite: "lax"
+      })
 
-    tokenCookie.value = data.bearerToken
+      tokenCookie.value = data.bearerToken
+      isUserAuth.value = true
+      user.value.login = resource.login
 
-    resource.login = ""
-    resource.password = ""
-  }
-  } catch(error) {
-  console.log(error)
-  }
+      resource.login = ""
+      resource.password = ""
+    }
+  } catch{}
 }
 
 function signUp() {

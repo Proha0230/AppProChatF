@@ -1,0 +1,129 @@
+<template>
+  <a-layout class="root-layout">
+    <cabinetHeader />
+
+    <a-layout>
+      <a-layout-sider
+          :collapsible="true"
+          :trigger="null"
+          >
+        <a-menu
+            v-model:openKeys="openKeys"
+            :selectedKeys="selectedKeys"
+            style="width: 256px"
+            mode="vertical"
+            :items="items"
+            @click="onClickMenu"
+        />
+      </a-layout-sider>
+
+      <a-layout-content
+          id="cabinet-layout-main-content"
+          class="main-content oc-scrollbar"
+      >
+        <slot name="content" />
+      </a-layout-content>
+    </a-layout>
+  </a-layout>
+</template>
+
+<script setup lang="ts">
+import {
+  MailOutlined,
+  UsergroupAddOutlined,
+  UserOutlined,
+  BookOutlined,
+  SettingOutlined
+} from '@ant-design/icons-vue'
+import cabinetHeader from './cabinetHeader.vue'
+import { useRouter } from "#app"
+import { useCookie } from "#app"
+import { useUserStore } from "~/pinia/user"
+import { storeToRefs } from "pinia"
+
+const router = useRouter()
+const { $api } = useNuxtApp()
+
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
+
+const openKeys = ref([])
+const authToken = useCookie("app-pro-chat.auth.token")
+const selectedKeys = computed(() => {
+  const fullPath = router.currentRoute.value.fullPath
+
+  const matchPath = items.value.find(item => fullPath.includes(item.path))
+
+  return matchPath ? [matchPath.key] : [""]
+})
+
+const items = ref([
+  {
+    key: 'users',
+    icon: () => h(UsergroupAddOutlined),
+    label: 'Поиск контактов',
+    title: 'Navigation One',
+    path: 'users'
+  },
+  {
+    key: 'my-profile',
+    icon: () => h(UserOutlined),
+    label: 'Мой профиль',
+    title: 'Navigation One',
+    path: 'my-profile'
+  },
+  {
+    key: 'my-contact',
+    icon: () => h(BookOutlined),
+    label: 'Мои контакты',
+    title: 'Navigation Two',
+    path: 'my-contact'
+  },
+  {
+    key: 'my-get-invite-contact',
+    icon: () => h(BookOutlined),
+    label: 'Мои приглашения в контакты',
+    title: 'Navigation Two',
+    path: 'my-get-invite-contact'
+  },
+  {
+    key: 'my-chats',
+    icon: () => h(MailOutlined),
+    label: 'Мои чаты',
+    title: 'Navigation One',
+    path: 'my-chats'
+  },
+  {
+    key: 'edit-profile',
+    icon: () => h(SettingOutlined),
+    label: 'Настройки профиля',
+    title: 'Navigation Two',
+    path: 'edit-profile'
+  }
+])
+
+function onClickMenu(event) {
+  router.push(`/${event.item.path}`)
+}
+
+async function getUserInfo() {
+  const { data } = await $api.get("/users-auth/get-info", {
+    headers: {
+      Authorization: authToken.value
+    }
+  })
+
+  user.value = {
+    ...data,
+    userInviteList: JSON.parse(data.userInviteList),
+    userContactList: JSON.parse(data.userContactList)
+  }
+}
+
+getUserInfo()
+
+</script>
+
+<style scoped lang="scss">
+
+</style>
