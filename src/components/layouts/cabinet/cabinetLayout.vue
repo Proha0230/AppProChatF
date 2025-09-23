@@ -37,18 +37,14 @@ import {
 } from '@ant-design/icons-vue'
 import cabinetHeader from './cabinetHeader.vue'
 import { useRouter } from "#app"
-import { useCookie } from "#app"
 import { useUserStore } from "~/pinia/user"
-import { storeToRefs } from "pinia"
 
 const router = useRouter()
 const { $api } = useNuxtApp()
 
 const userStore = useUserStore()
-const { user } = storeToRefs(userStore)
 
 const openKeys = ref([])
-const authToken = useCookie("app-pro-chat.auth.token")
 const selectedKeys = computed(() => {
   const fullPath = router.currentRoute.value.fullPath
 
@@ -77,7 +73,7 @@ const items = ref([
     icon: () => h(BookOutlined),
     label: 'Мои контакты',
     title: 'Navigation Two',
-    path: 'my-contact'
+    path: 'my-contacts'
   },
   {
     key: 'my-get-invite-contact',
@@ -106,21 +102,7 @@ function onClickMenu(event) {
   router.push(`/${event.item.path}`)
 }
 
-async function getUserInfo() {
-  const { data } = await $api.get("/users-auth/get-info", {
-    headers: {
-      Authorization: authToken.value
-    }
-  })
-
-  user.value = {
-    ...data,
-    userInviteList: JSON.parse(data.userInviteList),
-    userContactList: JSON.parse(data.userContactList)
-  }
-}
-
-getUserInfo()
+userStore.getUserInfo($api)
 
 </script>
 

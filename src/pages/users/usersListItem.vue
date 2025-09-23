@@ -37,19 +37,24 @@
         </div>
 
         <a-button
-          v-if="!isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode"
+          v-if="!isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode && !isUserContact"
           class="users-list-item__card-button-add"
           @click="addToContact"
         >+ Добавить в контакты</a-button>
 
         <div
-          v-else-if="isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode"
+          v-else-if="isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode && !isUserContact"
           v-text="'Это вы'"
         />
 
         <div
-            v-else-if="!isMyGetInviteContactMode && !isMyContactMode"
+            v-else-if="!isMyGetInviteContactMode && !isMyContactMode && !isUserContact"
             v-text="'Вы отправили запрос'"
+        />
+
+        <div
+          v-else-if="isUserContact && (!isMyGetInviteContactMode && !isMyContactMode)"
+          v-text="'В списке ваших контактов'"
         />
 
       </template>
@@ -92,18 +97,22 @@ const { user } = storeToRefs(userStore)
 const isVisiblePreview = ref(false)
 
 const isUserCard = computed(() => {
-  return user.value?.login === props.userData?.userName
+  return user.value?.userName === props.userData?.userName
 })
 
 const isUserAddedToInviteList = computed(() => {
-  return props.userData?.userInviteList?.includes(user.value?.login)
+  return props.userData?.userInviteList?.includes(user.value?.userName)
+})
+
+const isUserContact = computed(() => {
+  return user.value.userContactList?.includes(props.userData?.userName)
 })
 
 async function addToContact() {
   if (!isUserCard.value) {
     await $api.post("/users-contact/send-invite",
       {
-      userSendInviteLogin: user.value?.login,
+      userSendInviteLogin: user.value?.userName,
       userGetInviteLogin: props.userData?.userName
     })
   }
@@ -114,7 +123,7 @@ async function onAcceptInvite() {
     await $api.post("/users-contact/accept-invite",
         {
           userSendInviteLogin: props.userData?.userName,
-          userGetInviteLogin: user.value?.login
+          userGetInviteLogin: user.value?.userName
         }
     )
   }
@@ -129,7 +138,7 @@ async function onDeclineInvite() {
     await $api.post("/users-contact/decline-invite",
         {
           userSendInviteLogin: props.userData?.userName,
-          userGetInviteLogin: user.value?.login
+          userGetInviteLogin: user.value?.userName
         }
     )
   }
@@ -137,7 +146,7 @@ async function onDeclineInvite() {
   if (props.isMyContactMode) {
     await $api.post("/users-contact/delete-contact",
         {
-          currentUserLogin: user.value?.login,
+          currentUserLogin: user.value?.userName,
           deleteUserLogin: props.userData?.userName
         }
     )

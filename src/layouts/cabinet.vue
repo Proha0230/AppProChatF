@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import cabinetLayout from '~/components/layouts/cabinet/cabinetLayout.vue';
-
+import cabinetLayout from '~/components/layouts/cabinet/cabinetLayout.vue'
 </script>
 
 <style scoped lang="scss">

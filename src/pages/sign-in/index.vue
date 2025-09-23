@@ -73,7 +73,7 @@ const { $api } = useNuxtApp()
 const router = useRouter()
 
 const userStore = useUserStore()
-const { isUserAuth, user } = storeToRefs(userStore)
+const { isUserAuth } = storeToRefs(userStore)
 
 const resourceRef = ref()
 
@@ -135,7 +135,6 @@ try {
 
       tokenCookie.value = data.bearerToken
       isUserAuth.value = true
-      user.value.login = resource.login
 
       resource.login = ""
       resource.password = ""
