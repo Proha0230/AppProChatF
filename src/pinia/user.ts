@@ -1,10 +1,22 @@
 import { defineStore } from "pinia"
 import {useCookie} from "#app";
 
+interface UserInfoObjectResponse {
+    login: string,
+    avatar: string,
+    lang: string,
+    status: string,
+    chatsList: Array<string>,
+    blackList: Array<string>,
+    usersInContactList: Array<string>,
+    usersInInviteList: Array<string>,
+    usersWhomISentInvite: Array<string>
+}
+
 export const useUserStore = defineStore("userStore", {
     state: () => ({
     isUserAuth: false as boolean,
-    user: {} as { userName: string, userAvatar: string, userStatus: string, userContactList: Array<string>, userInviteList: Array<string> }
+    user: {} as UserInfoObjectResponse
     }),
 
     actions: {
@@ -18,11 +30,12 @@ export const useUserStore = defineStore("userStore", {
             })
 
             this.user = {
-                userName: data.login,
-                userAvatar: data.userAvatar,
-                userStatus: data.userStatus,
-                userInviteList: JSON.parse(data.userInviteList),
-                userContactList: JSON.parse(data.userContactList)
+                ...data,
+                usersWhomISentInvite: JSON.parse(data.usersWhomISentInvite),
+                usersInInviteList: JSON.parse(data.usersInInviteList),
+                usersInContactList: JSON.parse(data.usersInContactList),
+                chatsList: JSON.parse(data.chatsList),
+                blackList: JSON.parse(data.blackList)
             }
         }
     },

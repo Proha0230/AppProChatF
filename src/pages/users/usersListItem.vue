@@ -1,6 +1,6 @@
 <template>
   <a-card
-    class="users-list-item"
+    :class="['users-list-item', { 'users-list-item_my-contact-mode': isMyContactMode || isMyGetInviteContactMode }]"
     hoverable style="width: 240px"
   >
     <template #cover>
@@ -17,11 +17,6 @@
           #description
       >
         <div
-            class="users-list-item__card-contacts-length"
-            v-text="`Контактов: ${userData.userContactList?.length}`"
-        />
-
-        <div
             v-if="isMyGetInviteContactMode || isMyContactMode"
             class="users-list-item__card-buttons"
         >
@@ -37,23 +32,28 @@
         </div>
 
         <a-button
-          v-if="!isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode && !isUserContact"
+          v-if="!isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode && !isUserWhomSentInvite && !isUserAddedToContactList"
           class="users-list-item__card-button-add"
           @click="addToContact"
         >+ Добавить в контакты</a-button>
 
         <div
-          v-else-if="isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode && !isUserContact"
+          v-else-if="isUserCard && !isUserAddedToInviteList && !isMyGetInviteContactMode && !isMyContactMode"
           v-text="'Это вы'"
         />
 
         <div
-            v-else-if="!isMyGetInviteContactMode && !isMyContactMode && !isUserContact"
-            v-text="'Вы отправили запрос'"
+            v-else-if="!isMyContactMode && isUserWhomSentInvite"
+            v-text="'Вы отправили запрос на добавление в контакты'"
         />
 
         <div
-          v-else-if="isUserContact && (!isMyGetInviteContactMode && !isMyContactMode)"
+            v-else-if="!isMyContactMode && isUserAddedToInviteList"
+            v-text="'Получен запрос на добавление в контакты'"
+        />
+
+        <div
+          v-else-if="!isMyContactMode && isUserAddedToContactList"
           v-text="'В списке ваших контактов'"
         />
 
@@ -63,18 +63,18 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue"
+import { useUserStore } from "~/pinia/user"
+import { storeToRefs } from "pinia"
 
-import { computed } from "vue";
-import { useUserStore } from "~/pinia/user";
-import { storeToRefs } from "pinia";
+interface UserContactObjectResponse {
+  userName: string,
+  userAvatar: string,
+  userStatus: string
+}
 
 interface IProps {
-  userData?: {
-    userName?: string,
-    userAvatar?: string,
-    userInviteList?: Array<string>,
-    userContactList?: Array<string>
-  }
+  userData?: UserContactObjectResponse
   isMyGetInviteContactMode?: boolean
   isMyContactMode?: boolean
 }
@@ -82,8 +82,7 @@ const props = withDefaults(defineProps<IProps>(), {
   userData: () => ({
     userName: "",
     userAvatar: "",
-    userInviteList: [],
-    userContactList: []
+    userStatus: ""
   }),
   isMyGetInviteContactMode: false,
   isMyContactMode: false
@@ -97,25 +96,33 @@ const { user } = storeToRefs(userStore)
 const isVisiblePreview = ref(false)
 
 const isUserCard = computed(() => {
-  return user.value?.userName === props.userData?.userName
+  return user.value?.login === props.userData?.userName
 })
 
 const isUserAddedToInviteList = computed(() => {
-  return props.userData?.userInviteList?.includes(user.value?.userName)
+  return user.value.usersInInviteList?.includes(props.userData?.userName)
 })
 
-const isUserContact = computed(() => {
-  return user.value.userContactList?.includes(props.userData?.userName)
+const isUserAddedToContactList = computed(() => {
+  return user.value.usersInContactList?.includes(props.userData?.userName)
 })
+
+const isUserWhomSentInvite = computed(() => {
+  return user.value.usersWhomISentInvite?.includes(props.userData?.userName)
+})
+
+
 
 async function addToContact() {
   if (!isUserCard.value) {
     await $api.post("/users-contact/send-invite",
       {
-      userSendInviteLogin: user.value?.userName,
+      userSendInviteLogin: user.value?.login,
       userGetInviteLogin: props.userData?.userName
     })
   }
+
+  user.value.usersWhomISentInvite.push(props.userData?.userName)
 }
 
 async function onAcceptInvite() {
@@ -123,9 +130,14 @@ async function onAcceptInvite() {
     await $api.post("/users-contact/accept-invite",
         {
           userSendInviteLogin: props.userData?.userName,
-          userGetInviteLogin: user.value?.userName
+          userGetInviteLogin: user.value?.login
         }
     )
+
+    // удаляем юзера из списка тех кто кинул инвайт
+    user.value.usersInInviteList = user.value.usersInInviteList.filter(user => user !== props.userData?.userName)
+    // добавляем юзера в список контактов
+    user.value.usersInContactList.push(props.userData?.userName)
   }
 
   if (props.isMyContactMode) {
@@ -138,18 +150,25 @@ async function onDeclineInvite() {
     await $api.post("/users-contact/decline-invite",
         {
           userSendInviteLogin: props.userData?.userName,
-          userGetInviteLogin: user.value?.userName
+          userGetInviteLogin: user.value?.login
         }
     )
+
+    // удаляем юзера из списка тех кто кинул инвайт
+    user.value.usersInInviteList = user.value.usersInInviteList.filter(user => user !== props.userData?.userName)
   }
 
   if (props.isMyContactMode) {
     await $api.post("/users-contact/delete-contact",
         {
-          currentUserLogin: user.value?.userName,
+          currentUserLogin: user.value?.login,
           deleteUserLogin: props.userData?.userName
         }
     )
+
+    // удаляем юзера из списка контактов
+    user.value.usersInContactList = user.value.usersInContactList.filter(user => user !== props.userData?.userName)
+
   }
 }
 </script>
@@ -158,10 +177,33 @@ async function onDeclineInvite() {
 .users-list-item {
   padding-top: 2rem;
 
+  &.users-list-item_my-contact-mode {
+    :deep(.ant-card-meta-description) {
+      text-align: center;
+    }
+  }
+
+  :deep(.ant-card-meta-description) {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+  }
+
   :deep(.ant-card-cover) {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  :deep(.ant-image-img) {
+    max-width: 20rem;
+    max-height: 20rem;
+    border-radius: 1.6rem 1.6rem 0 0;
+  }
+
+  :deep(.ant-card-meta-detail) {
+    min-height: 8rem;
+    padding: 0 1rem;
   }
 }
 
@@ -171,7 +213,13 @@ async function onDeclineInvite() {
 
 .users-list-item__card-buttons {
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
   justify-content: space-between;
+
+  :deep(.ant-btn:hover) {
+    cursor: pointer;
+  }
 }
 
 .users-list-item__card-button-add {

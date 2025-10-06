@@ -33,7 +33,9 @@ import {
   UsergroupAddOutlined,
   UserOutlined,
   BookOutlined,
-  SettingOutlined
+  SettingOutlined,
+  UserAddOutlined,
+  PlusCircleOutlined
 } from '@ant-design/icons-vue'
 import cabinetHeader from './cabinetHeader.vue'
 import { useRouter } from "#app"
@@ -77,10 +79,17 @@ const items = ref([
   },
   {
     key: 'my-get-invite-contact',
-    icon: () => h(BookOutlined),
+    icon: () => h(UserAddOutlined),
     label: 'Мои приглашения в контакты',
     title: 'Navigation Two',
     path: 'my-get-invite-contact'
+  },
+  {
+    key: 'my-sent-invite-contact',
+    icon: () => h(PlusCircleOutlined),
+    label: 'Мои исходящие заявки',
+    title: 'Navigation Two',
+    path: 'my-sent-invite-contact'
   },
   {
     key: 'my-chats',

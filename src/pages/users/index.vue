@@ -5,21 +5,22 @@
 </template>
 
 <script setup lang="ts">
-import UsersList from "./usersList.vue";
+import UsersList from "./usersList.vue"
+import { ref } from "vue"
+
+interface UserContactObjectResponse {
+  userName: string,
+  userAvatar: string,
+  userStatus: string
+}
 
 const { $api } = useNuxtApp()
 
-const userList = ref()
+const userList = ref<Array<UserContactObjectResponse>>()
 
 async function getAllUserList() {
   const { data } = await $api.get("/users-contact/all-users-list")
-  userList.value = data.usersList.map((user: { userName: string, userAvatar: string, userInviteList: string, userContactList: string }) => {
-    return {
-      ...user,
-      userInviteList: JSON.parse(user.userInviteList),
-      userContactList: JSON.parse(user.userContactList)
-    }
-  })
+  userList.value = data.usersList
 }
 
 getAllUserList()

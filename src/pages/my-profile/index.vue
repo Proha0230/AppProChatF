@@ -5,7 +5,7 @@
         class="my-profile-avatar__image"
         :preview="isVisiblePreview"
         :width="200"
-        :src="user.userAvatar"
+        :src="user.avatar"
         @click="isVisiblePreview = true"
     />
 
@@ -28,7 +28,7 @@
 
     <div
       class="my-profile-status__value"
-      v-text="user.userStatus"
+      v-text="user.status"
     />
 
     <EditOutlined
@@ -44,7 +44,7 @@
 
     <div
       class="my-profile-name__value"
-      v-text="user.userName"
+      v-text="user.login"
     />
   </div>
 
@@ -54,7 +54,7 @@
   >
     <div
         class="my-profile-contacts__info"
-        v-text="`Мои контакты: ${user.userContactList?.length}`"
+        v-text="`Мои контакты: ${user.usersInContactList?.length}`"
     />
   </div>
 </div>
@@ -76,33 +76,37 @@ const isVisiblePreview = ref(false)
 
 async function onUploadAvatar(file) {
   const formData = new FormData()
-  console.log(file, "file")
   formData.append("file", file.file)
 
-  await $api.post("/users-profile/change-avatar", formData, {
+  const { data } = await $api.post("/users-profile/change-avatar", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
       Authorization: userAuthCookie.value
     }
   })
 
-  await userStore.getUserInfo($api)
+  if ("responseError" in data) {
+    console.log("Ошибка загрузки аватара")
+  } else {
+    user.value.avatar = data.response
+    console.log("Аватар успешно изменен")
+  }
 }
 
 function goToUserContacts() {
   router.push("/my-contacts")
 }
 
-async function getImageDimensions(file: File) {
-  const img = new Image()
-  img.src = URL.createObjectURL(file)
-  await img.decode()
-  const { width, height } = img
-  return {
-    width,
-    height
-  }
-}
+// async function getImageDimensions(file: File) {
+//   const img = new Image()
+//   img.src = URL.createObjectURL(file)
+//   await img.decode()
+//   const { width, height } = img
+//   return {
+//     width,
+//     height
+//   }
+// }
 </script>
 
 <style scoped lang="scss">
@@ -121,7 +125,9 @@ async function getImageDimensions(file: File) {
 
   :deep(.my-profile-avatar__image) {
     margin-bottom: 1.5rem;
-    border-radius: 50%;
+    border-radius: 1.6rem;
+    max-height: 30rem;
+    max-width: 30rem;
   }
 }
 

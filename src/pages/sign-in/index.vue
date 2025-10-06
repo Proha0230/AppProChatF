@@ -117,7 +117,7 @@ try {
   await resourceRef.value.validate()
 
   const { data } = await $api.post("/users-auth/sign-in", {
-    login: resource.login,
+    login: resource.login.toLowerCase(),
     password: resource.password
   })
 

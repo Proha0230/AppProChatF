@@ -1,7 +1,7 @@
 <template>
   <UsersList
-      :user-list="myGetInviteContacts"
-      is-my-get-invite-contact-mode
+      :user-list="mySentInviteContacts"
+      is-my-sent-invite-contact-mode
   />
 </template>
 
@@ -13,9 +13,10 @@ import { storeToRefs } from "pinia"
 const { $api } = useNuxtApp()
 
 const contactStore = useContactStore()
-const { myGetInviteContacts } = storeToRefs(contactStore)
+const { mySentInviteContacts } = storeToRefs(contactStore)
 
-contactStore.getGetInviteContacts($api)
+contactStore.getSentInviteContacts($api)
+
 </script>
 
 

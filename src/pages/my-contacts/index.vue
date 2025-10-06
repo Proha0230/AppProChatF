@@ -1,34 +1,21 @@
 <template>
   <UsersList
-      :user-list="userList"
+      :user-list="myContacts"
       is-my-contact-mode
   />
 </template>
 
 <script setup lang="ts">
 import UsersList from '../users/usersList.vue'
-import { useCookie } from "#app"
+import { useContactStore } from "~/pinia/contact"
+import { storeToRefs } from "pinia"
 
 const { $api } = useNuxtApp()
-const authToken = useCookie("app-pro-chat.auth.token")
 
-const userList = ref()
+const contactStore = useContactStore()
+const { myContacts } = storeToRefs(contactStore)
 
-async function getAllContact() {
-  const { data } = await $api.get("/users-contact/get-all", {
-    headers: {
-      Authorization: authToken.value
-    }
-  })
-  userList.value = data.map((user: { userName: string, userAvatar: string, userInviteList: string, userContactList: string }) => {
-    return {
-      ...user,
-      userContactList: JSON.parse(user.userContactList)
-    }
-  })
-}
-
-getAllContact()
+contactStore.getMyContacts($api)
 </script>
 
 

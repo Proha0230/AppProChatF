@@ -17,25 +17,48 @@
   </div>
 
   <div
-    v-else-if="isMyGetInviteContactMode"
+    v-else
     class="users-empty-list"
   >
-    <a-empty :description="'У вас пока нет заявок на добавление в контакты'" />
+    <a-empty :description="getEmptyText" />
   </div>
 </template>
 
 <script setup lang="ts">
 import UsersListItem from './usersListItem.vue'
 
+interface UserContactObjectResponse {
+  userName: string,
+  userAvatar: string,
+  userStatus: string
+}
+
 interface IProps {
-  userList?: Array<{ userName: string, userAvatar: string, userInviteList: Array<string>, userContactList: Array<string> }>
+  userList?: Array<UserContactObjectResponse>
   isMyGetInviteContactMode?: boolean
   isMyContactMode?: boolean
+  isMySentInviteContactMode?: boolean
 }
-withDefaults(defineProps<IProps>(), {
+
+const props = withDefaults(defineProps<IProps>(), {
   userList: () => ([]),
   isMyGetInviteContactMode: false,
-  isMyContactMode: false
+  isMyContactMode: false,
+  isMySentInviteContactMode: false
+})
+
+const getEmptyText = computed(() => {
+  if (props.isMyGetInviteContactMode) {
+    return 'У вас пока нет заявок на добавление в контакты'
+  }
+
+  if (props.isMyContactMode) {
+    return 'У вас пока нет контактов'
+  }
+
+  if (props.isMySentInviteContactMode) {
+    return 'У вас нет отправленных заявок на добавление в контакты'
+  }
 })
 </script>
 
