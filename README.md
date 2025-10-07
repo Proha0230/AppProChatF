@@ -1,1 +1,1 @@
-Nuxt3, TS, Vite, Pinia
+Nuxt3, TS, Vite, Pinia, Axios, AntDesign, SCSS

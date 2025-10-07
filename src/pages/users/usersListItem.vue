@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { useUserStore } from "~/pinia/user"
+import { useChatsStore } from "~/pinia/chats"
 import { storeToRefs } from "pinia"
 
 interface UserContactObjectResponse {
@@ -92,6 +93,8 @@ const { $api } = useNuxtApp()
 
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
+
+const chatStore = useChatsStore()
 
 const isVisiblePreview = ref(false)
 
@@ -141,7 +144,7 @@ async function onAcceptInvite() {
   }
 
   if (props.isMyContactMode) {
-
+      await onCreateChat()
   }
 }
 
@@ -170,6 +173,10 @@ async function onDeclineInvite() {
     user.value.usersInContactList = user.value.usersInContactList.filter(user => user !== props.userData?.userName)
 
   }
+}
+
+async function onCreateChat() {
+  await chatStore.createChat($api, props.userData?.userName)
 }
 </script>
 
