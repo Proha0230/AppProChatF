@@ -133,6 +133,8 @@ try {
         sameSite: "lax"
       })
 
+      console.log(tokenCookie, "tokenCookie")
+
       tokenCookie.value = data.bearerToken
       isUserAuth.value = true
 

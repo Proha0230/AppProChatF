@@ -179,7 +179,7 @@ function signIn() {
 .sign-up-content,
 .sign-up-success-content {
   min-width: 30rem;
-  max-height: 30rem;
+  height: 30rem;
   padding: 1.5rem;
   border: 0.1rem solid gray;
   border-radius: 1.2rem;
