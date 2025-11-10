@@ -40,11 +40,13 @@ import {
 import cabinetHeader from './cabinetHeader.vue'
 import { useRouter } from "#app"
 import { useUserStore } from "~/pinia/user"
+import { useContactStore } from "~/pinia/contact"
 
 const router = useRouter()
 const { $api } = useNuxtApp()
 
 const userStore = useUserStore()
+const contactStore = useContactStore()
 
 const openKeys = ref([])
 const selectedKeys = computed(() => {
@@ -112,7 +114,7 @@ function onClickMenu(event) {
 }
 
 userStore.getUserInfo($api)
-
+contactStore.getMyContacts($api)
 </script>
 
 <style scoped lang="scss">

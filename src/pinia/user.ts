@@ -21,13 +21,7 @@ export const useUserStore = defineStore("userStore", {
 
     actions: {
         async getUserInfo($api: any) {
-            const authToken = useCookie("app-pro-chat.auth.token")
-
-            const { data } = await $api.get("/users-auth/get-info", {
-                headers: {
-                    Authorization: authToken.value
-                }
-            })
+            const { data } = await $api.get("/users-auth/get-info")
 
             this.user = {
                 ...data,

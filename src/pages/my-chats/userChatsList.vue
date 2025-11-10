@@ -66,8 +66,9 @@ const { $api } = useNuxtApp()
 
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
+
 const chatsStore = useChatsStore()
-const { allUserChats } = storeToRefs(chatsStore)
+const { allUserChats, loginUserWithWhomChatIsOpened } = storeToRefs(chatsStore)
 
 const list = computed(() => {
   return Array.isArray(props.chatsList) ? props.chatsList : []
@@ -80,6 +81,7 @@ function deleteChat(userLogin: string) {
 }
 
 function goToChat(userLogin: string) {
+  loginUserWithWhomChatIsOpened.value = userLogin
   router.push(`/my-chats/${userLogin}`)
 }
 </script>

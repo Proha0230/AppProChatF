@@ -3,6 +3,7 @@ import path from "path"
 function resolve(DIRECTORY) {
     return path.join(__dirname, "src", DIRECTORY)
 }
+
 export default defineNuxtConfig({
 compatibilityDate: '2025-07-15',
 ssr: false,
@@ -10,6 +11,10 @@ ssr: false,
 pages: true,
 
 srcDir: "src/",
+
+alias: {
+    "@": path.resolve(__dirname, "src")
+},
 
 css: [
     "~/assets/stylesheets/main.scss",
